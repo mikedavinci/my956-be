@@ -47,7 +47,7 @@ import { BusinessesModule } from './business/business.module';
       useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         autoLoadEntities: true,
-        url: 'postgresql://doadmin:AVNS_FMfFhh6psrZoq1lkqkB@db-postgresql-nyc3-59643-do-user-2321004-0.g.db.ondigitalocean.com:25060/my956',
+        url: configService.get('DO_DATABASE_URL'),
         synchronize:
           configService.get('NODE_ENV') !== 'production' ? true : true,
         entities: ['dist/**/*.entity{.ts,.js}'],
