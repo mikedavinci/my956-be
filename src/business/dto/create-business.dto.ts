@@ -11,8 +11,10 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  IsNotEmpty,
 } from 'class-validator';
 import { BusinessStatus } from '../enums/business-status.enum';
+import { LocationEnum } from 'src/location/enums/location.enum';
 
 export class CreateBusinessDto {
   @ApiProperty({ example: 'Awesome Business Name' })
@@ -21,12 +23,10 @@ export class CreateBusinessDto {
   @MaxLength(255)
   name: string;
 
-  @ApiProperty({ example: 'awesome-business-name' })
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
-    message: 'Slug must be lowercase, numbers, and hyphens only',
-  })
-  slug: string;
+  slug?: string;
 
   @ApiProperty({ example: 'Detailed business description' })
   @IsString()
@@ -48,10 +48,9 @@ export class CreateBusinessDto {
   })
   phone: string;
 
-  @ApiProperty({ example: '123 Business Street, City, Country' })
-  @IsString()
-  @MinLength(5)
-  address: string;
+  @ApiProperty({ enum: LocationEnum, enumName: 'location_enum' })
+  @IsEnum(LocationEnum)
+  locationId: LocationEnum;
 
   @ApiPropertyOptional({ example: 'https://www.business.com' })
   @IsOptional()
@@ -59,8 +58,14 @@ export class CreateBusinessDto {
   website?: string;
 
   @ApiProperty({ example: 'https://example.com/profile.jpg' })
-  @IsUrl()
-  profileImage: string;
+  @ApiPropertyOptional()
+  @IsString()
+  profileImageUrl?: string;
+
+  @ApiProperty({ example: '123' })
+  @IsString()
+  @ApiPropertyOptional()
+  profileImageId?: string;
 
   @ApiPropertyOptional({ enum: BusinessStatus })
   @IsOptional()
@@ -72,7 +77,41 @@ export class CreateBusinessDto {
   @IsBoolean()
   featured?: boolean;
 
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
-  @IsUUID()
-  locationId: string;
+  @ApiPropertyOptional({ example: 'https://facebook.com/business-name' })
+  @IsOptional()
+  @IsUrl()
+  facebookUrl?: string;
+
+  @ApiPropertyOptional({ example: 'https://x.com/business-name' })
+  @IsOptional()
+  @IsUrl()
+  xUrl?: string;
+
+  @ApiPropertyOptional({ example: 'https://instagram.com/business-name' })
+  @IsOptional()
+  @IsUrl()
+  instagramUrl?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://linkedin.com/company/business-name',
+  })
+  @IsOptional()
+  @IsUrl()
+  linkedinUrl?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  clerkInvitationId: string;
+
+  // Add contact info from invitation
+  @ApiProperty({ example: 'John' })
+  @IsString()
+  @MinLength(2)
+  contactFirstName: string;
+
+  @ApiProperty({ example: 'Doe' })
+  @IsString()
+  @MinLength(2)
+  contactLastName: string;
 }

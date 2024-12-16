@@ -35,16 +35,18 @@ export class BusinessResponseDto {
   phone: string;
 
   @Expose()
-  @ApiProperty()
-  address: string;
-
-  @Expose()
   @ApiPropertyOptional()
   website?: string;
 
   @Expose()
   @ApiProperty()
-  profileImage: string;
+  @ApiPropertyOptional()
+  profileImageUrl?: string;
+
+  @Expose()
+  @ApiProperty()
+  @ApiPropertyOptional()
+  profileImageId?: string;
 
   @Expose()
   @ApiProperty()
@@ -73,6 +75,22 @@ export class BusinessResponseDto {
   @Expose()
   @ApiProperty()
   updatedAt: Date;
+
+  @Expose()
+  @ApiPropertyOptional()
+  facebookUrl?: string;
+
+  @Expose()
+  @ApiPropertyOptional()
+  xUrl?: string;
+
+  @Expose()
+  @ApiPropertyOptional()
+  instagramUrl?: string;
+
+  @Expose()
+  @ApiPropertyOptional()
+  linkedinUrl?: string;
 
   @Expose()
   @Type(() => UserResponseDto)

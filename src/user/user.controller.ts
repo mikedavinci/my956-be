@@ -30,17 +30,16 @@ import { UserRole } from './enums/user-role.enums';
 import { Roles } from 'src/decorator/roles.decorator';
 import { CurrentUser } from 'src/decorator/current-user.decorator';
 import { UsersService } from './user.service';
+import { Public } from 'src/auth/public.decorator';
 
 @ApiTags('users')
-@ApiBearerAuth()
-@UseGuards(ClerkAuthGuard, RolesGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN)
+  @Public()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -59,7 +58,7 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN)
+  @Public()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -73,6 +72,7 @@ export class UsersController {
   }
 
   @Get('profile')
+  @Public()
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -89,7 +89,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN)
+  @Public()
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
   @ApiResponse({
@@ -107,7 +107,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN)
+  @Public()
   @ApiOperation({ summary: 'Update user' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
   @ApiResponse({
@@ -127,6 +127,7 @@ export class UsersController {
   }
 
   @Patch('profile/update')
+  @Public()
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -148,7 +149,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Public()
   @ApiOperation({ summary: 'Delete user' })
   @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
   @ApiResponse({
@@ -162,7 +163,7 @@ export class UsersController {
   }
 
   @Get('clerk/:clerkId')
-  @Roles(UserRole.ADMIN)
+  @Public()
   @ApiOperation({ summary: 'Get user by Clerk ID' })
   @ApiParam({ name: 'clerkId', description: 'Clerk User ID', type: 'string' })
   @ApiResponse({

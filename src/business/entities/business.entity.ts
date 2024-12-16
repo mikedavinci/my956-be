@@ -10,10 +10,13 @@ import {
   ManyToOne,
   JoinColumn,
   Check,
+  OneToMany,
 } from 'typeorm';
 import { BusinessStatus } from '../enums/business-status.enum';
 import { User } from 'src/user/entities/user.entity';
+import { BusinessImage } from './business-image.entity';
 import { Location } from 'src/location/entities/location.entity';
+import { LocationEnum } from 'src/location/enums/location.enum';
 
 @Entity('businesses')
 @Index(['name', 'locationId'], { unique: true })
@@ -25,7 +28,7 @@ export class Business {
   @Index('idx_business_name')
   name: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
   @Index('idx_business_slug')
   slug: string;
 
@@ -36,20 +39,29 @@ export class Business {
   @Index('idx_business_category')
   category: string;
 
+  @Column({ type: 'varchar', length: 100 })
+  contactFirstName: string;
+
+  @Column({ type: 'varchar', length: 100 })
+  contactLastName: string;
+
   @Column({ type: 'varchar', length: 255 })
   email: string;
 
   @Column({ type: 'varchar', length: 50 })
   phone: string;
 
-  @Column({ type: 'text' })
-  address: string;
+  // @Column({ type: 'text' })
+  // address: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 1024, nullable: true })
   website?: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  profileImage: string;
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  profileImageUrl?: string;
+
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  profileImageId?: string;
 
   @Column({ type: 'decimal', precision: 3, scale: 2 })
   @Check(`"rating" >= 0 AND "rating" <= 5`)
@@ -80,21 +92,25 @@ export class Business {
   deletedAt: Date;
 
   // Relations
-  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'userId' })
   @Index('idx_business_user_id')
   user: User;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', nullable: true })
   userId: string;
 
   @ManyToOne(() => Location, (location) => location.businesses)
   @JoinColumn({ name: 'locationId' })
   location: Location;
 
-  @Column({ type: 'uuid' })
+  @Column({
+    type: 'enum',
+    enum: LocationEnum,
+    enumName: 'location_enum', // Use the same enumName
+  })
   @Index('idx_business_location_id')
-  locationId: string;
+  locationId: LocationEnum;
 
   // Metadata columns
   @Column({ type: 'jsonb', nullable: true })
@@ -115,8 +131,23 @@ export class Business {
     return this.reviewCount > 0 ? Number(this.rating) : 0;
   }
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  facebookUrl?: string;
+
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  xUrl?: string;
+
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  instagramUrl?: string;
+
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  linkedinUrl?: string;
+
+  @Column({ type: 'varchar', length: 1024, nullable: true })
   qrCodeUrl: string;
+
+  @OneToMany(() => BusinessImage, (image) => image.business)
+  images: BusinessImage[];
 
   @CreateDateColumn()
   qrCodeGeneratedAt: Date;

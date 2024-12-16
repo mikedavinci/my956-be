@@ -34,11 +34,12 @@ import { CurrentUser } from 'src/decorator/current-user.decorator';
 import { BusinessesService } from './business.service';
 import { Response } from 'express';
 import { QRCodeService } from './qr-code.service';
+import { Public } from 'src/auth/public.decorator';
 
 @ApiTags('businesses')
-@ApiBearerAuth()
-@UseGuards(ClerkAuthGuard, RolesGuard)
-@UseInterceptors(ClassSerializerInterceptor)
+// @ApiBearerAuth()
+// @UseGuards(ClerkAuthGuard, RolesGuard)
+// @UseInterceptors(ClassSerializerInterceptor)
 @Controller('businesses')
 export class BusinessesController {
   constructor(
@@ -47,7 +48,7 @@ export class BusinessesController {
   ) {}
 
   @Post()
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.ADMIN)
+  @Public()
   @ApiOperation({ summary: 'Create a new business' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -55,17 +56,18 @@ export class BusinessesController {
     type: BusinessResponseDto,
   })
   async create(
-    @Body() createBusinessDto: CreateBusinessDto,
-    @CurrentUser() user: any
+    @Body() createBusinessDto: CreateBusinessDto
   ): Promise<BusinessResponseDto> {
-    const business = await this.businessesService.create(
-      createBusinessDto,
-      user
+    console.log(
+      'Creating business with invitation:',
+      createBusinessDto.clerkInvitationId
     );
+    const business = await this.businessesService.create(createBusinessDto);
     return new BusinessResponseDto(business);
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Get all businesses' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -83,6 +85,7 @@ export class BusinessesController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOperation({ summary: 'Get business by ID' })
   @ApiParam({ name: 'id', description: 'Business ID' })
   @ApiResponse({
@@ -98,6 +101,7 @@ export class BusinessesController {
   }
 
   @Get('slug/:slug')
+  @Public()
   @ApiOperation({ summary: 'Get business by slug' })
   @ApiParam({ name: 'slug', description: 'Business slug' })
   @ApiResponse({
@@ -111,7 +115,8 @@ export class BusinessesController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.ADMIN)
+  @Public()
+  // @Roles(UserRole.BUSINESS_OWNER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Update business' })
   @ApiParam({ name: 'id', description: 'Business ID' })
   @ApiResponse({
@@ -129,7 +134,8 @@ export class BusinessesController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.ADMIN)
+  @Public()
+  // @Roles(UserRole.BUSINESS_OWNER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete business' })
   @ApiParam({ name: 'id', description: 'Business ID' })
   @ApiResponse({
@@ -141,6 +147,7 @@ export class BusinessesController {
   }
 
   @Get('user/:userId')
+  @Public()
   @ApiOperation({ summary: 'Get businesses by user ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @ApiResponse({
@@ -156,6 +163,7 @@ export class BusinessesController {
   }
 
   @Get(':id/qr-code')
+  @Public()
   @ApiOperation({ summary: 'Get business QR code' })
   @ApiParam({ name: 'id', description: 'Business ID' })
   @ApiResponse({
@@ -177,6 +185,7 @@ export class BusinessesController {
   }
 
   @Get(':id/qr-code/download')
+  @Public()
   @ApiOperation({ summary: 'Download business QR code as PNG' })
   @ApiParam({ name: 'id', description: 'Business ID' })
   @ApiResponse({
@@ -201,7 +210,8 @@ export class BusinessesController {
   }
 
   @Post(':id/qr-code/generate')
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.ADMIN)
+  @Public()
+  // @Roles(UserRole.BUSINESS_OWNER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Generate and save business QR code' })
   @ApiParam({ name: 'id', description: 'Business ID' })
   @ApiResponse({

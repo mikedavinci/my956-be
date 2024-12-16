@@ -89,4 +89,27 @@ export class UsersService {
 
     return users.map((user) => user.id);
   }
+
+  async findOneByEmail(email: string): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    return user;
+  }
+
+  async updateOne(id: string, updateUserDto: Partial<User>): Promise<User> {
+    const user = await this.findOne(id);
+    Object.assign(user, updateUserDto);
+    return this.usersRepository.save(user);
+  }
+
+  async softDelete(id: string): Promise<void> {
+    const user = await this.findOne(id);
+    await this.usersRepository.softDelete(id);
+  }
 }

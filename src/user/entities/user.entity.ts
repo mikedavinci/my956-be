@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { UserStatus } from '../enums/user-status.enum';
 import { UserRole } from '../enums/user-role.enums';
+import { Business } from 'src/business/entities/business.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -51,6 +52,9 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: true })
   profileImageUrl: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  profileImageId: string;
+
   @CreateDateColumn()
   @Index('idx_user_created_at')
   createdAt: Date;
@@ -72,7 +76,6 @@ export class User {
     return `${this.firstName} ${this.lastName}`;
   }
 
-  // Relations will be added as we implement other entities
-  // @OneToMany(() => Business, business => business.user)
-  // businesses: Business[];
+  @OneToMany(() => Business, (business) => business.user)
+  businesses: Business[];
 }

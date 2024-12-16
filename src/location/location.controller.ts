@@ -1,140 +1,117 @@
-// src/locations/locations.controller.ts
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  UseInterceptors,
-  ClassSerializerInterceptor,
-  ParseUUIDPipe,
-  Query,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-} from '@nestjs/swagger';
-import { CreateLocationDto } from './dto/create-location.dto';
-import { UpdateLocationDto } from './dto/update-location.dto';
-import { LocationResponseDto } from './dto/location-response.dto';
-import { ClerkAuthGuard } from '../auth/clerk-auth.guard';
-import { RolesGuard } from 'src/auth/roles.guard';
-import { UserRole } from 'src/user/enums/user-role.enums';
-import { Roles } from 'src/decorator/roles.decorator';
-import { LocationsService } from './location.service';
+// src/location/controllers/location-seed.controller.ts
+import { Controller, Post, HttpStatus, Get } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { LocationEnum } from './enums/location.enum';
 import { Location } from './entities/location.entity';
+import { Public } from 'src/auth/public.decorator';
 
-@ApiTags('locations')
-@ApiBearerAuth()
-@UseGuards(ClerkAuthGuard, RolesGuard)
-@UseInterceptors(ClassSerializerInterceptor)
-@Controller('locations')
-export class LocationsController {
-  constructor(private readonly locationsService: LocationsService) {}
+@ApiTags('Location Seeds')
+@Controller('locations/seed')
+export class LocationSeedController {
+  constructor(
+    @InjectRepository(Location)
+    private locationRepository: Repository<Location>
+  ) {}
 
   @Post()
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Create a new location' })
+  @Public()
+  @ApiOperation({ summary: 'Seed locations table with initial data' })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Location has been successfully created.',
-    type: LocationResponseDto,
+    description: 'Locations have been successfully seeded.',
   })
-  async create(
-    @Body() createLocationDto: CreateLocationDto
-  ): Promise<LocationResponseDto> {
-    const location = await this.locationsService.create(createLocationDto);
-    return new LocationResponseDto(location);
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Locations already exist in the database.',
+  })
+  async seedLocations() {
+    // Check if locations already exist
+    const existingLocations = await this.locationRepository.find();
+    if (existingLocations.length > 0) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'Locations are already seeded',
+        count: existingLocations.length,
+      };
+    }
+
+    const locations = [
+      {
+        id: LocationEnum.MCALLEN,
+        name: 'McAllen',
+        state: 'Texas',
+        country: 'United States',
+      },
+      {
+        id: LocationEnum.MISSION,
+        name: 'Mission',
+        state: 'Texas',
+        country: 'United States',
+      },
+      {
+        id: LocationEnum.EDINBURG,
+        name: 'Edinburg',
+        state: 'Texas',
+        country: 'United States',
+      },
+      {
+        id: LocationEnum.PHARR,
+        name: 'Pharr',
+        state: 'Texas',
+        country: 'United States',
+      },
+      {
+        id: LocationEnum.WESLACO,
+        name: 'Weslaco',
+        state: 'Texas',
+        country: 'United States',
+      },
+      {
+        id: LocationEnum.HARLINGEN,
+        name: 'Harlingen',
+        state: 'Texas',
+        country: 'United States',
+      },
+      {
+        id: LocationEnum.BROWNSVILLE,
+        name: 'Brownsville',
+        state: 'Texas',
+        country: 'United States',
+      },
+    ];
+
+    try {
+      const savedLocations = await this.locationRepository.save(locations);
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Locations seeded successfully',
+        count: savedLocations.length,
+        data: savedLocations,
+      };
+    } catch (error) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to seed locations',
+        error: error.message,
+      };
+    }
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Get all locations' })
-  @ApiQuery({ name: 'country', required: false })
-  @ApiQuery({ name: 'state', required: false })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Returns all locations.',
-    type: [LocationResponseDto],
   })
-  async findAll(
-    @Query('country') country?: string,
-    @Query('state') state?: string
-  ): Promise<LocationResponseDto[]> {
-    let locations: Location[];
-
-    if (country) {
-      locations = await this.locationsService.findByCountry(country);
-    } else if (state) {
-      locations = await this.locationsService.findByState(state);
-    } else {
-      locations = await this.locationsService.findAll();
-    }
-
-    return locations.map((location) => new LocationResponseDto(location));
-  }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Get location by ID' })
-  @ApiParam({ name: 'id', description: 'Location ID' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Returns the location.',
-    type: LocationResponseDto,
-  })
-  async findOne(
-    @Param('id', ParseUUIDPipe) id: string
-  ): Promise<LocationResponseDto> {
-    const location = await this.locationsService.findOne(id);
-    return new LocationResponseDto(location);
-  }
-
-  @Get('slug/:slug')
-  @ApiOperation({ summary: 'Get location by slug' })
-  @ApiParam({ name: 'slug', description: 'Location slug' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Returns the location.',
-    type: LocationResponseDto,
-  })
-  async findBySlug(@Param('slug') slug: string): Promise<LocationResponseDto> {
-    const location = await this.locationsService.findBySlug(slug);
-    return new LocationResponseDto(location);
-  }
-
-  @Patch(':id')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Update location' })
-  @ApiParam({ name: 'id', description: 'Location ID' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Location has been successfully updated.',
-    type: LocationResponseDto,
-  })
-  async update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateLocationDto: UpdateLocationDto
-  ): Promise<LocationResponseDto> {
-    const location = await this.locationsService.update(id, updateLocationDto);
-    return new LocationResponseDto(location);
-  }
-
-  @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Delete location' })
-  @ApiParam({ name: 'id', description: 'Location ID' })
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'Location has been successfully deleted.',
-  })
-  async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.locationsService.remove(id);
+  async getAllLocations() {
+    const locations = await this.locationRepository.find();
+    return {
+      status: HttpStatus.OK,
+      count: locations.length,
+      data: locations,
+    };
   }
 }

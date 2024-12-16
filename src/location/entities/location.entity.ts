@@ -9,32 +9,30 @@ import {
   DeleteDateColumn,
   Index,
   OneToMany,
+  PrimaryColumn,
 } from 'typeorm';
+import { LocationEnum } from '../enums/location.enum';
 
 @Entity('locations')
 export class Location {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryColumn({
+    type: 'enum',
+    enum: LocationEnum,
+    enumName: 'location_enum',
+  })
+  id: LocationEnum;
 
-  @Column({ type: 'varchar', length: 255 })
-  @Index('idx_location_name')
+  @Column()
   name: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
-  @Index('idx_location_slug')
-  slug: string;
-
-  @Column({ type: 'varchar', length: 100 })
-  @Index('idx_location_state')
+  @Column()
   state: string;
 
-  @Column({ type: 'varchar', length: 100 })
-  @Index('idx_location_country')
+  @Column()
   country: string;
 
-  @Column({ type: 'boolean', default: true })
-  @Index('idx_location_active')
-  isActive: boolean;
+  @OneToMany(() => Business, (business) => business.location)
+  businesses: Business[];
 
   @CreateDateColumn()
   createdAt: Date;
@@ -44,19 +42,4 @@ export class Location {
 
   @DeleteDateColumn()
   deletedAt: Date;
-
-  // Metadata
-  @Column({ type: 'jsonb', nullable: true })
-  metadata: Record<string, any>;
-
-  // Relations
-  @OneToMany(() => Business, (business) => business.location)
-  businesses: Business[];
-
-  // Geographical coordinates for mapping
-  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
-  latitude: number;
-
-  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
-  longitude: number;
 }

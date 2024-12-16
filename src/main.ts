@@ -12,7 +12,7 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
-    bodyParser: false,
+    bodyParser: true,
   });
 
   // Global prefix
@@ -21,8 +21,9 @@ async function bootstrap() {
   // Global pipes
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
       transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
       transformOptions: {
         enableImplicitConversion: true,
       },

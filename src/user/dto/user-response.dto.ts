@@ -2,6 +2,7 @@
 import { Exclude, Expose } from 'class-transformer';
 import { UserRole } from '../enums/user-role.enums';
 import { UserStatus } from '../enums/user-status.enum';
+import { IsOptional } from 'class-validator';
 
 @Exclude()
 export class UserResponseDto {
@@ -27,6 +28,7 @@ export class UserResponseDto {
   status: UserStatus;
 
   @Expose()
+  @IsOptional()
   profileImageUrl: string;
 
   @Expose()
