@@ -1,10 +1,15 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+} from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { HttpModule } from '@nestjs/axios';
-import { ClerkMiddleware } from './auth/clerk.middleware';
+// import { ClerkMiddleware } from './auth/clerk.middleware';
 import { ClerkAuthGuard } from './auth/clerk-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import { UserModule } from './user/user.module';
@@ -15,6 +20,10 @@ import { BusinessHoursModule } from './business-hours/business-hours.module';
 import { DealModule } from './deal/deal.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { BusinessesModule } from './business/business.module';
+import { InvitationModule } from './invitation/invitation.module';
+import { ClerkModule } from './clerk/clerk.module';
+import { SessionModule } from './session/session.module';
+import { ClerkMiddleware } from './auth/clerk.middleware';
 
 @Module({
   providers: [
@@ -30,8 +39,8 @@ import { BusinessesModule } from './business/business.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'production' ? '.env' : '.env.development',
+      // envFilePath:
+      //   process.env.NODE_ENV === 'production' ? '.env' : '.env.development',
     }),
     TypeOrmModule.forRootAsync({
       imports: [
@@ -81,10 +90,37 @@ import { BusinessesModule } from './business/business.module';
     BusinessHoursModule,
     DealModule,
     NotificationsModule,
+    InvitationModule,
+    ClerkModule,
+    SessionModule,
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(ClerkMiddleware).forRoutes('*');
+    consumer
+      .apply(ClerkMiddleware)
+      .exclude(
+        // Invitations routes
+        { path: 'invitations', method: RequestMethod.GET },
+        { path: 'invitations', method: RequestMethod.POST },
+        { path: 'invitations/*', method: RequestMethod.GET },
+        { path: 'invitations/*', method: RequestMethod.POST },
+        { path: 'invitations/*', method: RequestMethod.PUT },
+        { path: 'invitations/*', method: RequestMethod.DELETE },
+
+        // Businesses routes
+        { path: 'businesses', method: RequestMethod.GET },
+        { path: 'businesses', method: RequestMethod.POST },
+        { path: 'businesses/*', method: RequestMethod.GET },
+        { path: 'businesses/*', method: RequestMethod.PUT },
+        { path: 'businesses/*', method: RequestMethod.DELETE },
+
+        // Existing business-images routes
+        { path: 'business-images/*', method: RequestMethod.GET },
+        { path: 'business-images/*', method: RequestMethod.POST },
+        { path: 'business-images/upload/*', method: RequestMethod.GET },
+        { path: 'business-images/upload/*', method: RequestMethod.POST }
+      )
+      .forRoutes('*');
   }
 }
